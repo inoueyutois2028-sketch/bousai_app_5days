@@ -169,10 +169,39 @@ def format_report_time(iso_str):
         return iso_str
 
 
-def filter_shelters(district=None):
-    """district 指定があれば一致する避難所のみ、なければ全件を返す"""
+def filter_shelters(district=None, name=None, location=None, congestion=None, equipment=None, hazards=None):
+    """避難所の検索条件に一致するものだけを返す"""
     reload_shelters()
-    return [s for s in shelters if not district or s.get('district') == district]
+
+    search_name = (name or '').strip()
+    selected_equipment = set(equipment or [])
+    selected_hazards = set(hazards or [])
+
+    results = []
+    for shelter in shelters:
+        if district and shelter.get('district') != district:
+            continue
+
+        if search_name and search_name not in (shelter.get('name') or ''):
+            continue
+
+        if location and shelter.get('location') not in (None, location):
+            continue
+
+        if congestion and shelter.get('congestion') not in (None, congestion):
+            continue
+
+        shelter_equipment = set(shelter.get('equipment') or [])
+        if selected_equipment and not selected_equipment.issubset(shelter_equipment):
+            continue
+
+        shelter_hazards = set(shelter.get('hazards') or [])
+        if selected_hazards and not selected_hazards.issubset(shelter_hazards):
+            continue
+
+        results.append(shelter)
+
+    return results
 
 
 def parse_area_warnings(warning_data):
@@ -331,9 +360,21 @@ def shelter_register():
     return render_template('shelter_register.html')
 
 # 避難所検索ページ
-@app.route('/shelter_search')
+@app.route('/shelter_search', methods=['GET'])
 def shelter_search():
     return render_template('shelter_search.html')
+
+
+@app.route('/shelter_search_results', methods=['GET'])
+def shelter_search_results():
+    results = filter_shelters(
+        name=request.args.get('name'),
+        location=request.args.get('location'),
+        congestion=request.args.get('congestion'),
+        equipment=request.args.getlist('equipment'),
+        hazards=request.args.getlist('hazard'),
+    )
+    return render_template('search_results.html', results=results)
 
 # 全施設一覧ページ
 @app.route('/all_shelters')

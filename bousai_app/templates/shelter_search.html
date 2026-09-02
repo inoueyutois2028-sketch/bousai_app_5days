@@ -1,8 +1,226 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>避難所検索</h2>
-<p>登録されている避難所を確認できます。</p>
+<style>
+  .search-layout {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 34px;
+    align-items: start;
+    margin-top: 18px;
+  }
 
-<p><a href="/all_shelters">全施設一覧</a></p>
+  .search-column {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-height: 52px;
+  }
+
+  .label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111;
+    min-width: 180px;
+  }
+
+  .input-box {
+    flex: 1;
+    min-height: 40px;
+    border: 2px solid #bdbdbd;
+    background: #f3f3f3;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border-radius: 0;
+  }
+
+  .radio-group {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    border: 2px solid #bdbdbd;
+    background: #f3f3f3;
+    min-height: 40px;
+    padding: 0 18px;
+    width: 100%;
+  }
+
+  .checkbox-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(170px, 1fr));
+    gap: 12px 18px;
+    margin-top: 8px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.05rem;
+  }
+
+  .checkbox-item input {
+    width: 18px;
+    height: 18px;
+    accent-color: #1b1b1b;
+  }
+
+  .hazard-box {
+    border: 2px solid #bdbdbd;
+    background: #f3f3f3;
+    min-height: 220px;
+    padding: 16px 18px;
+  }
+
+  .search-button-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  .search-button {
+    border: 2px solid #bdbdbd;
+    background: #dfe5ea;
+    color: #1c1c1c;
+    padding: 12px 30px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-width: 120px;
+  }
+
+  .map-panel {
+    position: fixed;
+    right: 22px;
+    bottom: 18px;
+    width: 300px;
+    height: 220px;
+    background: white;
+    border: 2px solid #bdbdbd;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+    z-index: 10;
+  }
+
+  .map-panel .map-label {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    z-index: 20;
+    background: rgba(255,255,255,0.9);
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0d4b8f;
+    border-radius: 6px;
+  }
+
+  #shelterSearchMap {
+    width: 100%;
+    height: 100%;
+  }
+
+  .result-title {
+    margin-top: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0d4b8f;
+  }
+
+  .result-list {
+    margin-top: 12px;
+    list-style: disc;
+    padding-left: 24px;
+  }
+
+  @media (max-width: 800px) {
+    .search-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .field-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .label {
+      min-width: auto;
+    }
+  }
+</style>
+
+<form method="get" action="/shelter_search_results">
+  <div class="search-layout">
+    <div class="search-column">
+      <div class="field-row">
+        <div class="label">避難所名</div>
+        <input class="input-box" type="text" name="name" value="{{ request.args.get('name', '') }}" placeholder="（自由入力）">
+      </div>
+
+      <div class="field-row">
+        <div class="label" style="font-size: 1.35rem;">どこから探すか</div>
+        <div class="radio-group">
+          <label><input type="radio" name="location" value="現在地" {% if request.args.get('location') == '現在地' %}checked{% endif %}> 現在地</label>
+          <label><input type="radio" name="location" value="自宅" {% if request.args.get('location') == '自宅' %}checked{% endif %}> 自宅</label>
+        </div>
+      </div>
+
+      <div>
+        <div class="label" style="margin-bottom: 12px;">避難所設備条件</div>
+        <div class="checkbox-list">
+          <label class="checkbox-item"><input type="checkbox" name="equipment" value="バリアフリー" {% if 'バリアフリー' in request.args.getlist('equipment') %}checked{% endif %}> バリアフリー</label>
+          <label class="checkbox-item"><input type="checkbox" name="equipment" value="ペット対応" {% if 'ペット対応' in request.args.getlist('equipment') %}checked{% endif %}> ペット対応</label>
+          <label class="checkbox-item"><input type="checkbox" name="equipment" value="多言語対応" {% if '多言語対応' in request.args.getlist('equipment') %}checked{% endif %}> 多言語対応</label>
+          <label class="checkbox-item"><input type="checkbox" name="equipment" value="なし" {% if 'なし' in request.args.getlist('equipment') %}checked{% endif %}> なし</label>
+          <label class="checkbox-item"><input type="checkbox" name="equipment" value="その他" {% if 'その他' in request.args.getlist('equipment') %}checked{% endif %}> その他</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-column">
+      <div class="label" style="font-size: 1.6rem; margin-top: 6px;">対応している災害</div>
+      <div class="hazard-box">
+        <div class="checkbox-list" style="grid-template-columns: repeat(2, minmax(120px, 1fr));">
+          <label class="checkbox-item"><input type="checkbox" name="hazard" value="地震" {% if '地震' in request.args.getlist('hazard') %}checked{% endif %}> 地震</label>
+          <label class="checkbox-item"><input type="checkbox" name="hazard" value="河川氾濫" {% if '河川氾濫' in request.args.getlist('hazard') %}checked{% endif %}> 河川氾濫</label>
+          <label class="checkbox-item"><input type="checkbox" name="hazard" value="津波" {% if '津波' in request.args.getlist('hazard') %}checked{% endif %}> 津波</label>
+          <label class="checkbox-item"><input type="checkbox" name="hazard" value="積雪災害" {% if '積雪災害' in request.args.getlist('hazard') %}checked{% endif %}> 積雪災害</label>
+          <label class="checkbox-item"><input type="checkbox" name="hazard" value="土砂災害" {% if '土砂災害' in request.args.getlist('hazard') %}checked{% endif %}> 土砂災害</label>
+          <label class="checkbox-item"><input type="checkbox" name="hazard" value="台風" {% if '台風' in request.args.getlist('hazard') %}checked{% endif %}> 台風</label>
+        </div>
+      </div>
+
+      <div class="search-button-wrap">
+        <button class="search-button" type="submit">検索</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="search-button-wrap" style="justify-content:flex-end; margin-top: 18px;">
+  <a href="/all_shelters" class="search-button" style="display:inline-block; text-align:center;">避難所一覧</a>
+</div>
+
+<div class="map-panel">
+  <div class="map-label">避難所マップ</div>
+  <div id="shelterSearchMap"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const map = L.map('shelterSearchMap', { zoomControl: false }).setView([40.8244, 140.7400], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+});
+</script>
 {% endblock %}
