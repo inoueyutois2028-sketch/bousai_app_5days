@@ -63,6 +63,35 @@
       opacity: 0.92;
     }
 
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin: 18px 0 10px;
+      font-size: 1rem;
+    }
+
+    .nav-link {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      color: #2a3d53;
+      background: transparent;
+      transition: all 0.2s ease;
+      font-weight: 600;
+    }
+
+    .nav-link:hover {
+      background: #edf3fb;
+    }
+
+    .nav-link.active {
+      color: var(--navy);
+      font-weight: 700;
+    }
+
     .page {
       max-width: 980px;
       margin: 24px auto 40px;
@@ -111,6 +140,7 @@
       .brand { font-size: 1.5rem; }
       .topbar { padding: 0 18px; }
       .page { padding: 0 12px; }
+      .nav-links { gap: 10px; font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -119,6 +149,18 @@
     <div class="brand">防災アプリ</div>
     <div class="menu-btn">☰</div>
   </header>
+
+  <nav class="nav-links">
+    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">ホーム</a>
+    <a class="nav-link {% if request.path == '/shelter_search' %}active{% endif %}" href="/shelter_search">避難所検索</a>
+    <a class="nav-link {% if request.path == '/shelter_register' %}active{% endif %}" href="/shelter_register">避難所登録</a>
+    <a class="nav-link {% if request.path == '/board' %}active{% endif %}" href="/board">指示・発信ボード</a>
+    {% if session.get('logged_in') %}
+      <a class="nav-link" href="/logout">ログアウト</a>
+    {% else %}
+      <a class="nav-link" href="/login">ログイン</a>
+    {% endif %}
+  </nav>
 
   <main class="page">
     {% block content %}{% endblock %}
