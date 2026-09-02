@@ -6,11 +6,18 @@
 
 <!-- 成功・エラーメッセージ表示 -->
 {% if success %}
-  <p>{{ message }}</p>
+  <div style="padding: 12px 16px; border: 2px solid #2e7d32; background: #e8f5e9; color: #1b5e20; border-radius: 8px; margin-bottom: 16px;">
+    <strong>登録完了</strong><br>
+    {{ message }}
+  </div>
+  <p><a href="/all_shelters">全施設一覧を見る</a></p>
 {% endif %}
 
 {% if error %}
-  <p>{{ message }}</p>
+  <div style="padding: 12px 16px; border: 2px solid #c62828; background: #ffebee; color: #b71c1c; border-radius: 8px; margin-bottom: 16px;">
+    <strong>登録できませんでした</strong><br>
+    {{ message }}
+  </div>
 {% endif %}
 
 <form method="POST">
