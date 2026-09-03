@@ -4,78 +4,90 @@
 <style>
   .search-layout {
     display: grid;
-    grid-template-columns: 1.25fr 1fr;
-    gap: 34px;
+    grid-template-columns: minmax(360px, 1.08fr) minmax(300px, 0.92fr);
+    gap: 24px;
     align-items: start;
-    margin-top: 18px;
+    margin-top: 0;
+  }
+
+  .search-frame {
+    border: 2px solid #777;
+    background: #fff;
+    width: calc(100% + 36px);
+    min-height: 390px;
+    margin: -6px -18px 0;
+    padding: 18px 28px 22px;
   }
 
   .search-column {
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: 9px;
   }
 
   .field-row {
     display: flex;
     align-items: center;
-    gap: 18px;
-    min-height: 52px;
+    gap: 12px;
+    min-height: 43px;
   }
 
   .label {
-    font-size: 1.1rem;
+    font-size: 1.28rem;
     font-weight: 700;
     color: #111;
-    min-width: 180px;
+    min-width: 116px;
+    line-height: 1.3;
   }
 
   .input-box {
     flex: 1;
-    min-height: 40px;
-    border: 2px solid #bdbdbd;
-    background: #f3f3f3;
-    padding: 8px 12px;
-    font-size: 1rem;
+    width: 168px;
+    min-height: 31px;
+    border: 2px solid #c7c7c7;
+    background: #fafafa;
+    padding: 4px 10px;
+    font-size: 0.98rem;
     border-radius: 0;
+    box-sizing: border-box;
   }
 
   .radio-group {
     display: flex;
     align-items: center;
-    gap: 22px;
-    border: 2px solid #bdbdbd;
-    background: #f3f3f3;
-    min-height: 40px;
-    padding: 0 18px;
-    width: 100%;
+    gap: 18px;
+    border: 2px solid #c7c7c7;
+    background: #fafafa;
+    min-height: 31px;
+    padding: 0 8px;
+    width: 168px;
+    font-size: 0.92rem;
   }
 
   .checkbox-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(170px, 1fr));
-    gap: 12px 18px;
-    margin-top: 8px;
+    gap: 9px 18px;
+    margin-top: 0;
   }
 
   .checkbox-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 1.05rem;
+    gap: 6px;
+    font-size: 1rem;
+    line-height: 1.4;
   }
 
   .checkbox-item input {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     accent-color: #1b1b1b;
   }
 
   .hazard-box {
-    border: 2px solid #bdbdbd;
-    background: #f3f3f3;
-    min-height: 220px;
-    padding: 16px 18px;
+    min-height: 72px;
+    padding: 0 6px 2px;
   }
 
   .search-button-wrap {
@@ -88,24 +100,26 @@
     border: 2px solid #bdbdbd;
     background: #dfe5ea;
     color: #1c1c1c;
-    padding: 12px 30px;
-    font-size: 1.15rem;
-    font-weight: 700;
+    padding: 6px 28px;
+    font-size: 1rem;
+    font-weight: 400;
     cursor: pointer;
-    min-width: 120px;
+    min-width: 106px;
+    border-radius: 0;
+    line-height: 1.2;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
   }
 
   .map-panel {
-    position: fixed;
-    right: 22px;
-    bottom: 18px;
-    width: 300px;
-    height: 220px;
-    background: white;
-    border: 2px solid #bdbdbd;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    position: relative;
+    width: 100%;
+    height: 142px;
+    background: #fafafa;
+    border: 2px solid #c7c7c7;
+    box-shadow: none;
     overflow: hidden;
-    z-index: 10;
+    z-index: auto;
+    margin-top: 0;
   }
 
   .map-panel .map-label {
@@ -114,16 +128,30 @@
     left: 10px;
     z-index: 20;
     background: rgba(255,255,255,0.9);
-    padding: 4px 8px;
+    padding: 2px 5px;
     font-size: 0.8rem;
     font-weight: 700;
-    color: #0d4b8f;
-    border-radius: 6px;
+    color: #888;
+    border-radius: 0;
   }
 
   #shelterSearchMap {
     width: 100%;
     height: 100%;
+  }
+
+  .search-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 0 2px;
+  }
+
+  .search-footer a {
+    color: #087bc1;
+    font-size: 1rem;
+    text-decoration: underline;
   }
 
   .result-title {
@@ -156,15 +184,16 @@
 </style>
 
 <form method="get" action="/shelter_search_results">
-  <div class="search-layout">
-    <div class="search-column">
+  <div class="search-frame">
+    <div class="search-layout">
+      <div class="search-column">
       <div class="field-row">
         <div class="label">避難所名</div>
         <input class="input-box" type="text" name="name" value="{{ request.args.get('name', '') }}" placeholder="（自由入力）">
       </div>
 
       <div class="field-row">
-        <div class="label" style="font-size: 1.35rem;">どこから探すか</div>
+        <div class="label" style="font-size: 1.32rem;">どこから探すか</div>
         <div class="radio-group">
           <label><input type="radio" name="location" value="現在地" {% if request.args.get('location') == '現在地' %}checked{% endif %}> 現在地</label>
           <label><input type="radio" name="location" value="自宅" {% if request.args.get('location') == '自宅' %}checked{% endif %}> 自宅</label>
@@ -183,8 +212,8 @@
       </div>
     </div>
 
-    <div class="search-column">
-      <div class="label" style="font-size: 1.6rem; margin-top: 6px;">対応している災害</div>
+      <div class="search-column">
+      <div class="label" style="font-size: 1.42rem; margin-top: 2px;">対応している災害</div>
       <div class="hazard-box">
         <div class="checkbox-list" style="grid-template-columns: repeat(2, minmax(120px, 1fr));">
           <label class="checkbox-item"><input type="checkbox" name="hazard" value="地震" {% if '地震' in request.args.getlist('hazard') %}checked{% endif %}> 地震</label>
@@ -196,21 +225,19 @@
         </div>
       </div>
 
-      <div class="search-button-wrap">
-        <button class="search-button" type="submit">検索</button>
+      <div class="map-panel">
+        <div class="map-label">避難所マップ</div>
+        <div id="shelterSearchMap"></div>
       </div>
+
+      </div>
+    </div>
+    <div class="search-footer">
+      <a href="/all_shelters">避難所一覧表示</a>
+      <button class="search-button" type="submit">検索</button>
     </div>
   </div>
 </form>
-
-<div class="search-button-wrap" style="justify-content:flex-end; margin-top: 18px;">
-  <a href="/all_shelters" class="search-button" style="display:inline-block; text-align:center;">避難所一覧</a>
-</div>
-
-<div class="map-panel">
-  <div class="map-label">避難所マップ</div>
-  <div id="shelterSearchMap"></div>
-</div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
